@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taha Atağ — Visual Director</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Tokens ─────────────────────────────────────────────── */
+    :root {
+      --black:      #070707;
+      --surface:    #161616;
+      --border:     #1f1f1f;
+      --text:       #f0ede8;
+      --dim:        #666;
+      --muted:      #333;
+      --accent:     #b8a490;
+      --serif:      'Cormorant Garamond', Georgia, serif;
+      --sans:       'DM Sans', system-ui, sans-serif;
+    }
+
+    /* ─── Base ───────────────────────────────────────────────── */
+    html { scroll-behavior: smooth; background: var(--black); color: var(--text); }
+
+    body {
+      font-family: var(--sans);
+      font-weight: 300;
+      font-size: 14px;
+      line-height: 1.7;
+      background: var(--black);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; }
+
+    /* ─── Cursor ─────────────────────────────────────────────── */
+    #cd, #cr {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      top: 0; left: 0;
+      transform: translate(-50%, -50%);
+      transition: opacity .3s;
+    }
+    #cd {
+      width: 5px; height: 5px;
+      background: var(--text);
+    }
+    #cr {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(240,237,232,.3);
+      transition: width .35s ease, height .35s ease, border-color .3s ease;
+    }
+    body.ch #cr { width: 54px; height: 54px; border-color: rgba(184,164,144,.5); }
+
+    /* ─── Film grain ─────────────────────────────────────────── */
+    #grain {
+      position: fixed;
+      inset: -50%;
+      width: 200%; height: 200%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: .025;
+      pointer-events: none;
+      z-index: 9998;
+      animation: grain 8s steps(1) infinite;
+    }
+    @keyframes grain {
+      0%   { transform:translate(0,0) }
+      10%  { transform:translate(-5%,-10%) }
+      20%  { transform:translate(-15%,5%) }
+      30%  { transform:translate(7%,-25%) }
+      40%  { transform:translate(-5%,25%) }
+      50%  { transform:translate(-15%,10%) }
+      60%  { transform:translate(15%,0) }
+      70%  { transform:translate(0,15%) }
+      80%  { transform:translate(3%,35%) }
+      90%  { transform:translate(-10%,10%) }
+      100% { transform:translate(9%,-5%) }
+    }
+
+    /* ─── Entrance animation keyframes ──────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes lineGrow {
+      from { opacity: 0; transform: scaleX(0); }
+      to   { opacity: 1; transform: scaleX(1); }
+    }
+    @keyframes scrollBob {
+      0%, 100% { opacity: .25; transform: scaleY(1); }
+      50%       { opacity: .7;  transform: scaleY(.5); }
+    }
+
+    /* ─── Nav ────────────────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 32px 48px;
+      transition: padding .5s ease, background .5s ease, backdrop-filter .5s ease;
+      animation: fadeUp .8s ease both;
+      animation-delay: .2s;
+    }
+    .nav.stuck {
+      padding: 18px 48px;
+      background: rgba(7,7,7,.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .nav-brand {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: .08em;
+    }
+    .nav-links { display: flex; gap: 40px; }
+    .nav-links a {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--dim);
+      transition: color .3s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ─── Hero ───────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 600px;
+      overflow: hidden;
+      background: var(--black);
+      display: flex;
+      align-items: center;
+    }
+
+    /* Full-bleed hero fotoğrafı */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .hero-bg img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 2%;
+      filter: brightness(.82) contrast(1.06) saturate(.88);
+    }
+    /* Tüm kenarları yumuşak siyahla maskeler — vignette */
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right,  rgba(7,7,7,.72) 0%, rgba(7,7,7,.28) 42%, rgba(7,7,7,.1) 70%, rgba(7,7,7,.55) 100%),
+        linear-gradient(to bottom, rgba(7,7,7,.6)  0%, transparent 22%, transparent 75%, rgba(7,7,7,.8) 100%),
+        radial-gradient(ellipse 120% 100% at 50% 50%, transparent 30%, rgba(7,7,7,.35) 70%, rgba(7,7,7,.75) 100%);
+    }
+
+    /* hero text */
+    .hero-content {
+      position: absolute;
+      z-index: 10;
+      top: 50%;
+      left: 7vw;
+      transform: translateY(-50%);
+    }
+    .hero-eyebrow {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: .44em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 22px;
+      animation: fadeUp .9s ease both;
+      animation-delay: .55s;
+    }
+    .hero-name {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: clamp(72px, 10vw, 160px);
+      line-height: .88;
+      letter-spacing: -.02em;
+      color: var(--text);
+    }
+    .hero-name-line {
+      display: block;
+      overflow: hidden;
+    }
+    .hero-name-line span {
+      display: block;
+      animation: fadeUp 1.2s cubic-bezier(.16,1,.3,1) both;
+    }
+    .hero-name-line:nth-child(1) span { animation-delay: .68s; }
+    .hero-name-line:nth-child(2) span { animation-delay: .84s; }
+
+    .hero-divider {
+      width: 64px;
+      height: 1px;
+      background: var(--accent);
+      margin: 28px 0 20px;
+      transform-origin: left;
+      animation: lineGrow .9s ease both;
+      animation-delay: 1.1s;
+    }
+    .hero-role {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--dim);
+      animation: fadeUp .9s ease both;
+      animation-delay: 1.2s;
+    }
+
+    /* corner + scroll */
+    .hero-corner {
+      position: absolute;
+      bottom: 11vh;
+      right: 7vw;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      animation: fadeIn 1.4s ease both;
+      animation-delay: 1.5s;
+    }
+    .hero-corner span {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 11vh;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 1.4s ease both;
+      animation-delay: 1.8s;
+    }
+    .hero-scroll span {
+      font-size: 8px;
+      letter-spacing: .4em;
+      text-transform: uppercase;
+      color: var(--muted);
+      writing-mode: vertical-lr;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--muted), transparent);
+      animation: scrollBob 2.2s ease-in-out infinite;
+    }
+
+    /* ─── Section shared ─────────────────────────────────────── */
+    .s-label {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .45em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    /* ─── Scroll reveal ──────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .9s ease, transform .9s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-d1 { transition-delay: .1s; }
+    .reveal-d2 { transition-delay: .2s; }
+    .reveal-d3 { transition-delay: .3s; }
+    .reveal-d4 { transition-delay: .4s; }
+
+    /* ─── Work ───────────────────────────────────────────────── */
+    .work { padding: 100px 7vw; border-top: 1px solid var(--border); }
+
+    .work-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+    .work-header a {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .3s;
+    }
+    .work-header a::after { content: '↗'; font-size: 11px; }
+    .work-header a:hover { color: var(--text); }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .work-item {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      cursor: none;
+      background: var(--black);
+    }
+    .work-bg {
+      position: absolute;
+      inset: 0;
+      background: #0c0c0c;
+      transition: transform 1s cubic-bezier(.16,1,.3,1);
+    }
+    .work-item:hover .work-bg { transform: scale(1.05); }
+
+    .work-bg img {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: grayscale(25%) brightness(.48) contrast(1.12) saturate(.55);
+      transition: filter 1s ease;
+    }
+    .work-item:hover .work-bg img {
+      filter: grayscale(10%) brightness(.58) contrast(1.08) saturate(.75);
+    }
+
+    /* gradient overlay */
+    .work-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to top, rgba(7,7,7,.92) 0%, rgba(7,7,7,.18) 55%, transparent 100%),
+        linear-gradient(to right, rgba(7,7,7,.15) 0%, transparent 60%);
+    }
+
+    /* içerik — sol alt */
+    .work-info {
+      position: absolute;
+      inset: 0;
+      padding: 28px 32px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .work-num {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .work-title {
+      font-family: var(--serif);
+      font-size: clamp(22px, 2.6vw, 40px);
+      font-weight: 300;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .work-divider {
+      width: 28px;
+      height: 1px;
+      background: var(--accent);
+      margin-bottom: 10px;
+    }
+    .work-cat {
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 20px;
+    }
+    .work-cta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .45s ease, transform .45s ease;
+    }
+    .work-item:hover .work-cta { opacity: 1; transform: translateY(0); }
+    .work-cta span {
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .work-play {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid rgba(240,237,232,.3);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .work-play svg { width: 9px; height: 9px; fill: var(--text); margin-left: 2px; }
+
+    /* sağ kenarda dikey yıl */
+    .work-year {
+      position: absolute;
+      right: 16px;
+      bottom: 28px;
+      writing-mode: vertical-rl;
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: .25em;
+      color: var(--muted);
+    }
+
+    .work-tagline {
+      font-family: var(--serif);
+      font-size: clamp(15px, 1.5vw, 20px);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--dim);
+      line-height: 1.7;
+      max-width: 520px;
+      margin-bottom: 48px;
+    }
+
+    /* ─── Çalışılan Kişiler ──────────────────────────────────── */
+    .collab {
+      padding: 80px 7vw 100px;
+      border-top: 1px solid var(--border);
+    }
+    .collab-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 56px;
+    }
+    .collab-bubbles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+    }
+    .bubble {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: none;
+    }
+    .bubble-img {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: border-color .4s, transform .4s cubic-bezier(.16,1,.3,1);
+      position: relative;
+    }
+    .bubble:hover .bubble-img {
+      border-color: var(--accent);
+      transform: scale(1.08);
+    }
+    .bubble-img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+      filter: grayscale(35%) brightness(.82);
+      transition: filter .4s ease;
+    }
+    .bubble:hover .bubble-img img {
+      filter: grayscale(10%) brightness(.98);
+    }
+    /* Logolar için: tam görünsün, padding ile */
+    .bubble-img.is-logo {
+      background: #131313;
+      padding: 14px;
+    }
+    .bubble-img.is-logo img {
+      object-fit: contain;
+      object-position: center center;
+      filter: grayscale(20%) brightness(.9);
+    }
+    .bubble:hover .bubble-img.is-logo img {
+      filter: grayscale(0%) brightness(1);
+    }
+    .bubble-name {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--dim);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity .3s ease, transform .3s ease;
+      white-space: nowrap;
+    }
+    .bubble:hover .bubble-name {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── About ──────────────────────────────────────────────── */
+    .about {
+      padding: 120px 7vw;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      border-top: 1px solid var(--border);
+    }
+    .about-eyebrow { display: block; margin-bottom: 40px; }
+    .about-heading {
+      font-family: var(--serif);
+      font-size: clamp(44px, 6vw, 88px);
+      font-weight: 300;
+      line-height: .92;
+      letter-spacing: -.02em;
+      color: var(--text);
+      margin-bottom: 40px;
+    }
+    .about-bio {
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.85;
+      color: var(--dim);
+      max-width: 400px;
+    }
+    .about-tagline {
+      font-family: var(--serif);
+      font-size: 18px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--accent);
+      margin-top: 28px;
+      max-width: 360px;
+      line-height: 1.5;
+      letter-spacing: .01em;
+    }
+    .about-stats { display: flex; flex-direction: column; gap: 0; }
+    .stat {
+      padding: 28px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat:first-child { padding-top: 0; }
+    .stat:last-child { border-bottom: none; padding-bottom: 0; }
+    .stat-n {
+      font-family: var(--serif);
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -.02em;
+      color: var(--text);
+    }
+    .stat-l {
+      display: block;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* ─── Contact ────────────────────────────────────────────── */
+    .contact {
+      padding: 120px 7vw;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .contact-avail {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .45em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 32px;
+    }
+    .contact-heading {
+      font-family: var(--serif);
+      font-size: clamp(52px, 8vw, 120px);
+      font-weight: 300;
+      line-height: .9;
+      letter-spacing: -.02em;
+      color: var(--text);
+      margin-bottom: 56px;
+    }
+    .contact-heading--muted {
+      color: var(--accent);
+    }
+    .contact-email {
+      font-size: clamp(14px, 1.6vw, 20px);
+      font-weight: 300;
+      letter-spacing: .05em;
+      color: var(--dim);
+      transition: color .4s;
+      margin-bottom: 64px;
+    }
+    .contact-email:hover { color: var(--text); }
+    .contact-socials { display: flex; gap: 36px; }
+    .contact-socials a {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color .3s;
+    }
+    .contact-socials a:hover { color: var(--dim); }
+
+    /* ─── Video Modal ───────────────────────────────────────── */
+    .video-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(7,7,7,.96);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .4s ease;
+    }
+    .video-modal.open { opacity: 1; pointer-events: all; }
+    .video-close {
+      position: absolute;
+      top: 32px; right: 7vw;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--dim);
+      cursor: none;
+      border: none;
+      background: none;
+      transition: color .3s;
+    }
+    .video-close:hover { color: var(--text); }
+    .video-wrap {
+      width: min(90vw, 900px);
+      aspect-ratio: 16/9;
+      background: #000;
+    }
+    .video-wrap iframe {
+      width: 100%; height: 100%;
+      border: none;
+    }
+
+    /* ─── Hakkımda Overlay ──────────────────────────────────── */
+    .bio-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(7,7,7,.97);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .6s ease;
+    }
+    .bio-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .bio-close {
+      position: absolute;
+      top: 36px; right: 7vw;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--dim);
+      cursor: none;
+      border: none;
+      background: none;
+      transition: color .3s;
+    }
+    .bio-close:hover { color: var(--text); }
+    .bio-inner {
+      max-width: 680px;
+      padding: 0 7vw;
+      width: 100%;
+    }
+    .bio-label {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .45em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 48px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .bio-overlay.open .bio-label {
+      opacity: 1; transform: translateY(0);
+      transition-delay: .15s;
+    }
+    .bio-para {
+      font-family: var(--serif);
+      font-size: clamp(17px, 1.8vw, 24px);
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--text);
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1);
+    }
+    .bio-overlay.open .bio-para:nth-child(2) { opacity:1; transform:translateY(0); transition-delay:.3s; }
+    .bio-overlay.open .bio-para:nth-child(3) { opacity:1; transform:translateY(0); transition-delay:.48s; }
+    .bio-overlay.open .bio-para:nth-child(4) { opacity:1; transform:translateY(0); transition-delay:.66s; }
+    .bio-line {
+      width: 0;
+      height: 1px;
+      background: var(--accent);
+      margin-bottom: 40px;
+      transition: width 1s cubic-bezier(.16,1,.3,1);
+    }
+    .bio-overlay.open .bio-line { width: 48px; transition-delay: .2s; }
+
+    /* ─── Footer ─────────────────────────────────────────────── */
+    .footer {
+      padding: 28px 7vw;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer span {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .25em;
+      color: var(--muted);
+    }
+
+    /* ─── Mobile ─────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      body { cursor: auto; }
+      #cd, #cr { display: none; }
+      .nav { padding: 22px 24px; }
+      .nav.stuck { padding: 14px 24px; }
+      .hero-bg img { object-position: 65% center; }
+      .hero-content {
+        top: auto;
+        bottom: 10vh;
+        left: 6vw;
+        transform: none;
+      }
+      .hero-name { font-size: clamp(52px, 14vw, 80px); }
+      .hero-corner, .hero-scroll { display: none; }
+      .work { padding: 80px 5vw; }
+      .work-grid { grid-template-columns: 1fr; }
+      .work-item { aspect-ratio: 4/3; }
+      .about { grid-template-columns: 1fr; padding: 80px 6vw; gap: 60px; }
+      .contact { padding: 80px 6vw; }
+      .footer { flex-direction: column; gap: 10px; text-align: center; padding: 24px 6vw; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Video Modal ──────────────────────────────────── -->
+  <div class="video-modal" id="videoModal">
+    <button class="video-close" id="videoClose">Kapat ✕</button>
+    <div class="video-wrap">
+      <iframe id="videoFrame" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- ─── Hakkımda Overlay ─────────────────────────────── -->
+  <div class="bio-overlay" id="bioOverlay">
+    <button class="bio-close" id="bioClose">Kapat ✕</button>
+    <div class="bio-inner">
+      <p class="bio-label">Taha Atağ — Visual Director</p>
+      <div class="bio-line"></div>
+      <p class="bio-para">24 yaşındayım ve son 5 yıldır video prodüksiyon dünyasında aktif olarak çalışıyorum. Hikâye anlatımını yalnızca bir kayıt süreci olarak değil, duyguları ve atmosferi görsel bir dile dönüştüren yaratıcı bir süreç olarak görüyorum.</p>
+      <p class="bio-para">Visual Director olarak çalışmalarımda sinematik estetiği, güçlü kompozisyonları ve detaylara verilen önemi merkeze alıyorum. Her projede markanın, kişinin veya hikâyenin kendine özgü karakterini ortaya çıkaracak görsel bir dünya oluşturmayı hedefliyorum.</p>
+      <p class="bio-para">Reklam filmlerinden marka içeriklerine, sosyal medya kampanyalarından yaratıcı video projelerine kadar farklı alanlarda üretim yapıyor; fikir aşamasından son kareye kadar sürecin her noktasında aktif rol alıyorum. Benim için iyi bir video yalnızca izlenen değil, hissedilen bir deneyimdir.</p>
+    </div>
+  </div>
+
+  <div id="grain" aria-hidden="true"></div>
+  <div id="cd" aria-hidden="true"></div>
+  <div id="cr" aria-hidden="true"></div>
+
+  <!-- ─── Nav ──────────────────────────────────────────── -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-brand">TA</a>
+    <div class="nav-links">
+      <a href="#work">Çalışmalarım</a>
+      <a href="#" id="aboutBtn">Hakkımda</a>
+      <a href="#contact">İletişim</a>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ─────────────────────────────────────────── -->
+  <section class="hero" id="hero">
+
+    <!-- Full-bleed stüdyo fotoğrafı -->
+    <div class="hero-bg">
+      <img src="hero.jpg" alt="" />
+    </div>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">Visual Director</p>
+      <h1 class="hero-name">
+        <span class="hero-name-line"><span>TAHA</span></span>
+        <span class="hero-name-line"><span>ATAĞ</span></span>
+      </h1>
+      <div class="hero-divider"></div>
+      <p class="hero-role">Istanbul — 2024</p>
+    </div>
+
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ─── Work ─────────────────────────────────────────── -->
+  <section class="work" id="work">
+    <div class="work-header reveal">
+      <span class="s-label">Çalışmalarım</span>
+      <a href="#contact">View All Projects</a>
+    </div>
+
+    <p class="work-tagline reveal">Her proje yayınlanmaz.<br />Burada olanlar, dönüp tekrar bakmaya değer bulunanlar.</p>
+
+    <div class="work-grid">
+
+      <div class="work-item reveal reveal-d1" data-video="O56ZKuSUBOI">
+        <div class="work-bg"><img src="project1.jpeg" alt="" /></div>
+        <div class="work-overlay"></div>
+        <div class="work-info">
+          <div class="work-num">01</div>
+          <div class="work-title">Victor Osimhen</div>
+          <div class="work-divider"></div>
+          <div class="work-cta">
+            <span>Watch Project</span>
+            <div class="work-play"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>
+          </div>
+        </div>
+        <div class="work-year">2024</div>
+      </div>
+
+      <div class="work-item reveal reveal-d2" data-video="Gx-HXJjG4ag">
+        <div class="work-bg"><img src="project2.jpeg" alt="" /></div>
+        <div class="work-overlay"></div>
+        <div class="work-info">
+          <div class="work-num">02</div>
+          <div class="work-title">Toprak Razgatlıoğlu</div>
+          <div class="work-divider"></div>
+          <div class="work-cta">
+            <span>Watch Project</span>
+            <div class="work-play"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>
+          </div>
+        </div>
+        <div class="work-year">2024</div>
+      </div>
+
+      <div class="work-item reveal reveal-d3" data-video="J2rG5GuV3dE">
+        <div class="work-bg"><img src="project3.jpeg" alt="" /></div>
+        <div class="work-overlay"></div>
+        <div class="work-info">
+          <div class="work-num">03</div>
+          <div class="work-title">Semih Saygıner</div>
+          <div class="work-divider"></div>
+          <div class="work-cta">
+            <span>Watch Project</span>
+            <div class="work-play"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>
+          </div>
+        </div>
+        <div class="work-year">2023</div>
+      </div>
+
+      <div class="work-item reveal reveal-d4" data-video="gN_R1wiWLPY">
+        <div class="work-bg"><img src="project4.jpeg" alt="" /></div>
+        <div class="work-overlay"></div>
+        <div class="work-info">
+          <div class="work-num">04</div>
+          <div class="work-title">Fizik Podcast</div>
+          <div class="work-divider"></div>
+          <div class="work-cta">
+            <span>Watch Project</span>
+            <div class="work-play"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>
+          </div>
+        </div>
+        <div class="work-year">2023</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── Çalışılan Kişiler ───────────────────────────── -->
+  <section class="collab" id="collab">
+    <div class="collab-header reveal">
+      <span class="s-label">Çalıştığım Kişiler</span>
+    </div>
+    <div class="collab-bubbles reveal reveal-d1">
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Mayday.png" alt="" /></div>
+        <span class="bubble-name">Mayday</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Rehber Matematik.png" alt="" /></div>
+        <span class="bubble-name">Rehber Matematik</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Chef Mathematics.png" alt="" /></div>
+        <span class="bubble-name">Chef Mathematics</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/ÜçDörtBeş All Star.png" alt="" /></div>
+        <span class="bubble-name">ÜçDörtBeş All Star</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Ankara Belediyesi.png" alt="" /></div>
+        <span class="bubble-name">Ankara Belediyesi</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Özkurbir.png" alt="" /></div>
+        <span class="bubble-name">Özkurbir</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Tözok.png" alt="" /></div>
+        <span class="bubble-name">Tözok</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Shenfest.png" alt="" /></div>
+        <span class="bubble-name">Shenfest</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Robotik Rehabilitasyon.png" alt="" /></div>
+        <span class="bubble-name">Robotik Rehabilitasyon</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Sınav.png" alt="" /></div>
+        <span class="bubble-name">Sınav</span>
+      </div>
+      <div class="bubble">
+        <div class="bubble-img"><img src="çalıştığım kişiler/Üsküdar Amerikan Üniversitesi.png" alt="" /></div>
+        <span class="bubble-name">Üsküdar Amerikan Üniversitesi</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── About ────────────────────────────────────────── -->
+  <section class="about" id="about">
+    <div class="reveal">
+      <span class="s-label about-eyebrow">About</span>
+      <h2 class="about-heading">Behind<br />the<br />Frame.</h2>
+      <p class="about-bio about-tagline">I don't create images. I design atmosphere.</p>
+    </div>
+    <div class="about-stats reveal reveal-d2">
+      <div class="stat">
+        <div class="stat-n">5+</div>
+        <span class="stat-l">Years Active</span>
+      </div>
+      <div class="stat">
+        <div class="stat-n">40+</div>
+        <span class="stat-l">Projects Completed</span>
+      </div>
+      <div class="stat">
+        <div class="stat-n">IST</div>
+        <span class="stat-l">Based in Istanbul</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Contact ──────────────────────────────────────── -->
+  <section class="contact" id="contact">
+    <h2 class="contact-heading contact-heading--muted reveal reveal-d1">İletişime<br />Geç.</h2>
+    <a href="mailto:tahaatag35@gmail.com" class="contact-email reveal reveal-d2">
+      tahaatag35@gmail.com
+    </a>
+    <div class="contact-socials reveal reveal-d3">
+      <a href="https://instagram.com/taha.atag/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.linkedin.com/in/tahaatag/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:tahaatag35@gmail.com">Mail</a>
+    </div>
+  </section>
+
+  <!-- ─── Footer ───────────────────────────────────────── -->
+  <footer class="footer">
+    <span>© 2024 Taha Atağ</span>
+    <span>Visual Director · Istanbul, TR</span>
+  </footer>
+
+  <script>
+    /* ─── Custom cursor ──────────────────────────────────── */
+    const cd = document.getElementById('cd');
+    const cr = document.getElementById('cr');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cd.style.left = mx + 'px';
+      cd.style.top  = my + 'px';
+    });
+
+    (function lerp() {
+      rx += (mx - rx) * .11;
+      ry += (my - ry) * .11;
+      cr.style.left = rx + 'px';
+      cr.style.top  = ry + 'px';
+      requestAnimationFrame(lerp);
+    })();
+
+    document.querySelectorAll('a, .work-item').forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('ch'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('ch'));
+    });
+
+    /* ─── Video Modal ────────────────────────────────────── */
+    const videoModal = document.getElementById('videoModal');
+    const videoFrame = document.getElementById('videoFrame');
+    const videoClose = document.getElementById('videoClose');
+
+    function openVideo(id) {
+      videoFrame.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+      videoModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeVideo() {
+      videoModal.classList.remove('open');
+      videoFrame.src = '';
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.work-item[data-video]').forEach(item => {
+      item.addEventListener('click', () => openVideo(item.dataset.video));
+    });
+    videoClose.addEventListener('click', closeVideo);
+    videoModal.addEventListener('click', e => { if (e.target === videoModal) closeVideo(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideo(); });
+
+    /* ─── Hakkımda Overlay ───────────────────────────────── */
+    const bioOverlay = document.getElementById('bioOverlay');
+    const bioClose   = document.getElementById('bioClose');
+    const aboutBtn   = document.getElementById('aboutBtn');
+
+    aboutBtn.addEventListener('click', e => {
+      e.preventDefault();
+      bioOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+    bioClose.addEventListener('click', () => {
+      bioOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+    bioOverlay.addEventListener('click', e => {
+      if (e.target === bioOverlay) {
+        bioOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        bioOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+
+    /* ─── Nav on scroll ──────────────────────────────────── */
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('stuck', window.scrollY > 50);
+    }, { passive: true });
+
+    /* ─── Parallax on hero image ─────────────────────────── */
+    const heroBgImg = document.querySelector('.hero-bg img');
+    window.addEventListener('scroll', () => {
+      const sy = window.scrollY;
+      const hh = document.getElementById('hero').offsetHeight;
+      if (sy < hh && heroBgImg) {
+        heroBgImg.style.transform = `translateY(${sy * .14}px)`;
+      }
+    }, { passive: true });
+
+    /* ─── Intersection Observer for scroll reveals ───────── */
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

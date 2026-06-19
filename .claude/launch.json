@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "taha-portfolio",
+      "runtimeExecutable": "/Users/tahaatag/Library/Application Support/com.raycast.macos/NodeJS/runtime/22.14.0/bin/node",
+      "runtimeArgs": ["-e", "const h=require('http'),fs=require('fs'),p=require('path'),root='/Users/tahaatag/Desktop/CLAUDE WEBSİTEE';const mime={'html':'text/html','jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','css':'text/css','js':'application/javascript','svg':'image/svg+xml'};h.createServer((q,r)=>{let u=decodeURIComponent(q.url==='/'?'index.html':q.url);let f=p.join(root,u);let ext=(f.split('.').pop()||'').toLowerCase();let ct=mime[ext]||'application/octet-stream';fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end('')}else{r.writeHead(200,{'Content-Type':ct});r.end(d)}})}).listen(3456)"],
+      "port": 3456
+    }
+  ]
+}
