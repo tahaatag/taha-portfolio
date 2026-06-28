@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hizmetler — Taha Atağ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #070707;
+      --surface: #111;
+      --border: #1f1f1f;
+      --text: #f0ede8;
+      --dim: #666;
+      --muted: #2a2a2a;
+      --gold: #c9a84c;
+      --gold-dim: rgba(201,168,76,.15);
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ─── Cursor ─── */
+    #cd {
+      position: fixed; top: 0; left: 0;
+      width: 5px; height: 5px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: transform .1s;
+    }
+    #cr {
+      position: fixed; top: 0; left: 0;
+      width: 32px; height: 32px;
+      border: 1px solid rgba(201,168,76,.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: width .3s, height .3s, border-color .3s;
+    }
+    body.ch #cr { width: 48px; height: 48px; border-color: rgba(201,168,76,.7); }
+
+    /* ─── Nav ─── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 28px 7vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: padding .4s ease, background .4s ease;
+    }
+    .nav.stuck {
+      padding: 16px 7vw;
+      background: rgba(7,7,7,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      font-family: var(--serif);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: .18em;
+      color: var(--text);
+    }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+    }
+    .nav-links a {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--dim);
+      transition: color .3s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--text); }
+    .nav-links a.active { color: var(--gold); }
+
+    /* ─── Hero ─── */
+    .hero {
+      padding: 180px 7vw 100px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .45em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 28px;
+      display: block;
+    }
+    .hero-heading {
+      font-family: var(--serif);
+      font-size: clamp(52px, 8vw, 120px);
+      font-weight: 300;
+      line-height: .9;
+      letter-spacing: -.02em;
+      color: var(--text);
+      margin-bottom: 40px;
+    }
+    .hero-sub {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--dim);
+      max-width: 480px;
+    }
+
+    /* ─── Hizmetler grid ─── */
+    .services {
+      padding: 100px 7vw;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .service-card {
+      background: var(--black);
+      padding: 52px 40px 48px;
+      position: relative;
+      overflow: hidden;
+      transition: background .5s ease;
+      cursor: none;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold-dim);
+      opacity: 0;
+      transition: opacity .5s ease;
+    }
+    .service-card:hover { background: #0d0d0d; }
+    .service-card:hover::before { opacity: 1; }
+
+    .service-num {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .35em;
+      color: var(--gold);
+      margin-bottom: 40px;
+      display: block;
+    }
+    .service-icon {
+      width: 36px; height: 36px;
+      margin-bottom: 28px;
+      opacity: .7;
+    }
+    .service-title {
+      font-family: var(--serif);
+      font-size: clamp(26px, 2.8vw, 40px);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .service-divider {
+      width: 28px; height: 1px;
+      background: var(--gold);
+      margin: 18px 0 22px;
+      transition: width .5s ease;
+    }
+    .service-card:hover .service-divider { width: 52px; }
+    .service-desc {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.85;
+      color: var(--dim);
+      margin-bottom: 36px;
+    }
+    .service-list {
+      list-style: none;
+      margin-bottom: 44px;
+    }
+    .service-list li {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .08em;
+      color: var(--dim);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: color .3s;
+    }
+    .service-card:hover .service-list li { color: #888; }
+    .service-list li::before {
+      content: '';
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+    .service-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      transition: gap .3s ease;
+    }
+    .service-card:hover .service-cta { gap: 16px; }
+    .service-cta svg {
+      width: 14px; height: 14px;
+      stroke: var(--gold);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    /* ─── CTA band ─── */
+    .cta-band {
+      padding: 100px 7vw;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .cta-heading {
+      font-family: var(--serif);
+      font-size: clamp(36px, 4vw, 64px);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -.01em;
+      color: var(--text);
+    }
+    .cta-heading em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    .cta-right {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .cta-text {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--dim);
+      max-width: 380px;
+    }
+    .cta-btns {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: var(--gold);
+      color: var(--black);
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      transition: background .3s, gap .3s;
+      cursor: none;
+    }
+    .btn-primary:hover { background: #d4a84c; gap: 16px; }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      transition: border-color .3s, color .3s, gap .3s;
+      cursor: none;
+    }
+    .btn-secondary:hover { border-color: var(--dim); color: var(--text); gap: 16px; }
+
+    /* ─── Randevu Modal ─── */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(7,7,7,.97);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .4s ease;
+    }
+    .modal.open { opacity: 1; pointer-events: all; }
+    .modal-close {
+      position: absolute;
+      top: 32px; right: 7vw;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--dim);
+      cursor: none;
+      border: none;
+      background: none;
+      transition: color .3s;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-inner {
+      width: min(600px, 90vw);
+      padding: 0 7vw;
+    }
+    .modal-label {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .45em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .modal-title {
+      font-family: var(--serif);
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 300;
+      color: var(--text);
+      margin-bottom: 48px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 300;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color .3s;
+      width: 100%;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--gold); }
+    .form-group select { cursor: none; }
+    .form-group textarea { resize: none; height: 100px; }
+    .form-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--gold);
+      color: var(--black);
+      font-family: var(--sans);
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      border: none;
+      cursor: none;
+      transition: background .3s;
+      margin-top: 8px;
+    }
+    .form-submit:hover { background: #d4a84c; }
+
+    /* ─── Footer ─── */
+    .footer {
+      padding: 28px 7vw;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer span {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ─── Reveal ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: .1s; }
+    .reveal-d2 { transition-delay: .2s; }
+    .reveal-d3 { transition-delay: .3s; }
+
+    /* ─── Mobile ─── */
+    @media (max-width: 768px) {
+      body { cursor: auto; }
+      #cd, #cr { display: none; }
+      .nav { padding: 22px 24px; }
+      .hero { padding: 120px 6vw 60px; }
+      .services { padding: 60px 6vw; }
+      .services-grid { grid-template-columns: 1fr; }
+      .service-card { padding: 40px 28px; }
+      .cta-band { grid-template-columns: 1fr; padding: 60px 6vw; gap: 40px; }
+      .form-row { grid-template-columns: 1fr; }
+      .footer { flex-direction: column; gap: 10px; text-align: center; padding: 24px 6vw; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="cd" aria-hidden="true"></div>
+  <div id="cr" aria-hidden="true"></div>
+
+  <!-- Randevu Modal -->
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose">Kapat ✕</button>
+    <div class="modal-inner">
+      <p class="modal-label">Randevu Oluştur</p>
+      <h2 class="modal-title">Projenizi<br />Konuşalım.</h2>
+      <form name="randevu" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="contactForm">
+        <input type="hidden" name="form-name" value="randevu" />
+        <p style="display:none;"><input name="bot-field" /></p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ad Soyad</label>
+            <input type="text" name="name" placeholder="Adınız" required />
+          </div>
+          <div class="form-group">
+            <label>E-posta</label>
+            <input type="email" name="email" placeholder="mail@domain.com" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Telefon Numarası</label>
+          <input type="tel" name="phone" placeholder="+90 5XX XXX XX XX" />
+        </div>
+        <div class="form-group">
+          <label>Hizmet</label>
+          <select name="service">
+            <option value="">Hizmet seçin</option>
+            <option>Video Çekimi</option>
+            <option>Video Edit / Prodüksiyon</option>
+            <option>Web Site Tasarımı</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Projeniz hakkında kısaca bilgi verin</label>
+          <textarea name="message" placeholder="Projenizi anlatın..."></textarea>
+        </div>
+        <button type="submit" class="form-submit">Gönder →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav" id="nav">
+    <a href="index.html" class="nav-brand">TA</a>
+    <div class="nav-links">
+      <a href="index.html#work">Çalışmalarım</a>
+      <a href="index.html" id="aboutBtn">Hakkımda</a>
+      <a href="hizmetler.html" class="active">Hizmetler</a>
+      <a href="index.html#contact">İletişim</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <span class="hero-label reveal">Ne yapıyorum?</span>
+    <h1 class="hero-heading reveal reveal-d1">Hizmetlerim</h1>
+    <p class="hero-sub reveal reveal-d2">Markalar, girişimler ve yaratıcı ekipler için fikirden yayına kadar tüm süreci yönetiyorum. Çekim, kurgu ve tasarım tek çatı altında.</p>
+  </section>
+
+  <!-- Hizmetler -->
+  <section class="services">
+    <div class="services-grid">
+
+      <!-- Video Çekimi -->
+      <div class="service-card reveal">
+        <span class="service-num">01</span>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#c9a84c" stroke-width="1.2">
+          <rect x="2" y="8" width="24" height="20" rx="2"/>
+          <path d="M26 14l8-4v16l-8-4V14z"/>
+          <circle cx="14" cy="18" r="4"/>
+        </svg>
+        <h2 class="service-title">Video<br />Çekimi</h2>
+        <div class="service-divider"></div>
+        <p class="service-desc">Reklamlar, tanıtımlar, sosyal medya içerikleri ve kurumsal videolar için sinematik çekim hizmeti. Profesyonel ekipman, güçlü kompozisyon.</p>
+        <ul class="service-list">
+          <li>Reklam & Tanıtım Filmi</li>
+          <li>Sosyal Medya İçerikleri</li>
+          <li>Etkinlik & Organizasyon</li>
+          <li>Kurumsal Video</li>
+          <li>Müzik Videosu</li>
+        </ul>
+        <a href="#" class="service-cta" onclick="openModal(); return false;">
+          Randevu Oluştur
+          <svg viewBox="0 0 14 14"><path d="M2 7h10M7 2l5 5-5 5"/></svg>
+        </a>
+      </div>
+
+      <!-- Video Edit -->
+      <div class="service-card reveal reveal-d1">
+        <span class="service-num">02</span>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#c9a84c" stroke-width="1.2">
+          <rect x="2" y="6" width="32" height="24" rx="2"/>
+          <path d="M2 14h32M10 20h4M18 20h8M10 24h6M18 24h4"/>
+          <rect x="6" y="10" width="6" height="2" rx="1" fill="#c9a84c" stroke="none"/>
+        </svg>
+        <h2 class="service-title">Video Edit /<br />Prodüksiyon</h2>
+        <div class="service-divider"></div>
+        <p class="service-desc">Kurgu, renk, ses tasarımı ve motion grafikler ile videolarınıza profesyonel bir final dokunuşu. Ham görüntüden final ürüne.</p>
+        <ul class="service-list">
+          <li>Kurgu & Montaj</li>
+          <li>Renk Düzenleme (Color Grade)</li>
+          <li>Ses Tasarımı & Mix</li>
+          <li>Motion Grafik</li>
+          <li>Altyazı & Kapak Tasarımı</li>
+        </ul>
+        <a href="#" class="service-cta" onclick="openModal(); return false;">
+          Randevu Oluştur
+          <svg viewBox="0 0 14 14"><path d="M2 7h10M7 2l5 5-5 5"/></svg>
+        </a>
+      </div>
+
+      <!-- Web Site Tasarımı -->
+      <div class="service-card reveal reveal-d2">
+        <span class="service-num">03</span>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#c9a84c" stroke-width="1.2">
+          <rect x="2" y="4" width="32" height="28" rx="2"/>
+          <path d="M2 12h32"/>
+          <circle cx="7" cy="8" r="1.5" fill="#c9a84c" stroke="none"/>
+          <circle cx="12" cy="8" r="1.5" fill="#c9a84c" stroke="none"/>
+          <path d="M8 20l4-4 4 4 6-6"/>
+        </svg>
+        <h2 class="service-title">Web Site<br />Tasarımı</h2>
+        <div class="service-divider"></div>
+        <p class="service-desc">Marka kimliğine uygun, modern ve kullanıcı dostu web siteleri tasarlıyorum. Estetik, hız ve işlevsellik bir arada.</p>
+        <ul class="service-list">
+          <li>Portfolyo & Kişisel Site</li>
+          <li>Marka & Kurumsal Site</li>
+          <li>Landing Page</li>
+          <li>Mobil Uyumlu Tasarım</li>
+          <li>UI / UX Danışmanlığı</li>
+        </ul>
+        <a href="#" class="service-cta" onclick="openModal(); return false;">
+          Randevu Oluştur
+          <svg viewBox="0 0 14 14"><path d="M2 7h10M7 2l5 5-5 5"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA Band -->
+  <section class="cta-band reveal">
+    <h2 class="cta-heading">Projenizi birlikte<br /><em>hayata geçirelim.</em></h2>
+    <div class="cta-right">
+      <p class="cta-text">Web sitesi, video çekimi veya edit ihtiyacını kısaca anlat; projen için en doğru çözümü birlikte planlayalım.</p>
+      <div class="cta-btns">
+        <a href="#" class="btn-primary" onclick="openModal(); return false;">
+          Randevu Oluştur →
+        </a>
+        <a href="mailto:tahaatag35@gmail.com" class="btn-secondary">
+          Mail Gönder →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span>© 2024 Taha Atağ</span>
+    <span>Visual Director · Istanbul, TR</span>
+  </footer>
+
+  <script>
+    /* cursor */
+    const cd = document.getElementById('cd');
+    const cr = document.getElementById('cr');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e => {
+      mx=e.clientX; my=e.clientY;
+      cd.style.left=mx+'px'; cd.style.top=my+'px';
+    });
+    (function lerp(){
+      rx+=(mx-rx)*.11; ry+=(my-ry)*.11;
+      cr.style.left=rx+'px'; cr.style.top=ry+'px';
+      requestAnimationFrame(lerp);
+    })();
+    document.querySelectorAll('a,button,.service-card').forEach(el=>{
+      el.addEventListener('mouseenter',()=>document.body.classList.add('ch'));
+      el.addEventListener('mouseleave',()=>document.body.classList.remove('ch'));
+    });
+
+    /* nav stuck */
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll',()=>{
+      nav.classList.toggle('stuck', window.scrollY>50);
+    },{passive:true});
+
+    /* modal */
+    const modal = document.getElementById('modal');
+    const modalClose = document.getElementById('modalClose');
+    function openModal(){
+      modal.classList.add('open');
+      document.body.style.overflow='hidden';
+    }
+    function closeModal(){
+      modal.classList.remove('open');
+      document.body.style.overflow='';
+    }
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+    /* reveal */
+    const observer = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+  </script>
+
+</body>
+</html>
