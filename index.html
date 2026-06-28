@@ -1124,5 +1124,17 @@
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   </script>
+
+<!-- Netlify form detection helper (hidden) -->
+<form name="randevu" data-netlify="true" netlify-honeypot="bot-field" style="display:none">
+  <input type="hidden" name="form-name" value="randevu" />
+  <input name="bot-field" />
+  <input name="ad-soyad" />
+  <input name="eposta" />
+  <input name="telefon" />
+  <input name="hizmet" />
+  <textarea name="mesaj"></textarea>
+</form>
+
 </body>
 </html>
