@@ -443,15 +443,16 @@
       letter-spacing: .25em;
       color: var(--muted);
     }
+    .behance-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
     .work-behance {
-      grid-column: 1 / -1;
       text-decoration: none;
-      aspect-ratio: 16/5 !important;
+      width: calc(50% - 8px);
     }
-    .work-behance .work-info {
-      opacity: 1;
-      transform: none;
-    }
+    .work-behance .work-info { opacity: 1; transform: none; }
     .work-behance .work-cta { opacity: .6; transform: none; transition: opacity .3s; }
     .work-behance:hover .work-cta { opacity: 1; transform: none; }
 
@@ -935,7 +936,11 @@
       </div>
 
 
-      <a class="work-item work-behance reveal reveal-d5" href="https://www.behance.net/tahaata3" target="_blank" rel="noopener">
+
+    </div>
+
+    <div class="behance-row reveal reveal-d5">
+      <a class="work-item work-behance" href="https://www.behance.net/tahaata3" target="_blank" rel="noopener">
         <div class="work-bg"><img src="behance logo.jpg" alt="Behance" /></div>
         <div class="work-overlay" style="background:rgba(7,7,7,0.5)"></div>
         <div class="work-info">
@@ -947,8 +952,8 @@
           </div>
         </div>
       </a>
-
     </div>
+
   </section>
 
   <!-- ─── Çalışılan Kişiler ───────────────────────────── -->
