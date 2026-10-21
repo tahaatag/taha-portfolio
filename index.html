@@ -303,7 +303,7 @@
     .reveal-d4 { transition-delay: .4s; }
 
     /* ─── Work ───────────────────────────────────────────────── */
-    .work { padding: 100px 7vw 0; border-top: 1px solid var(--border); }
+    .work { padding: 100px 7vw; border-top: 1px solid var(--border); }
 
     .work-header {
       display: flex;
@@ -443,55 +443,19 @@
       letter-spacing: .25em;
       color: var(--muted);
     }
-    .behance-banner {
-      display: block;
-      position: relative;
+    .work-behance {
+      grid-column: 1 / -1;
+      max-width: 50%;
+      margin: 0 auto;
       width: 100%;
-      height: 120px;
-      margin-top: 2px;
-      overflow: hidden;
       text-decoration: none;
-      cursor: pointer;
     }
-    .behance-banner-bg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      transition: transform .6s ease;
+    .work-behance .work-info {
+      opacity: 1;
+      transform: none;
     }
-    .behance-banner:hover .behance-banner-bg { transform: scale(1.04); }
-    .behance-banner-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(7,7,7,0.6);
-    }
-    .behance-banner-content {
-      position: relative;
-      z-index: 1;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 48px;
-    }
-    .behance-banner-label {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.2rem, 2vw, 1.8rem);
-      color: var(--text);
-      letter-spacing: .08em;
-    }
-    .behance-banner-cta {
-      font-size: 11px;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: var(--text);
-      opacity: .6;
-      transition: opacity .3s;
-    }
-    .behance-banner:hover .behance-banner-cta { opacity: 1; }
+    .work-behance .work-cta { opacity: .6; transform: none; transition: opacity .3s; }
+    .work-behance:hover .work-cta { opacity: 1; transform: none; }
 
     .work-tagline {
       font-family: var(--serif);
@@ -973,17 +937,20 @@
       </div>
 
 
+      <a class="work-item work-behance reveal reveal-d5" href="https://www.behance.net/tahaata3" target="_blank" rel="noopener">
+        <div class="work-bg"><img src="behance logo.jpg" alt="Behance" /></div>
+        <div class="work-overlay" style="background:rgba(7,7,7,0.5)"></div>
+        <div class="work-info">
+          <div class="work-title">Tüm Çalışmalar</div>
+          <div class="work-divider"></div>
+          <div class="work-cta">
+            <span>Behance'de Görüntüle</span>
+            <div class="work-play" style="transform:rotate(-45deg)"><svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9"/></svg></div>
+          </div>
+        </div>
+      </a>
+
     </div>
-
-    <a class="behance-banner reveal" href="https://www.behance.net/tahaata3" target="_blank" rel="noopener">
-      <img src="behance logo.jpg" alt="Behance" class="behance-banner-bg" />
-      <div class="behance-banner-overlay"></div>
-      <div class="behance-banner-content">
-        <span class="behance-banner-label">Tüm Çalışmalar</span>
-        <span class="behance-banner-cta">Behance'de Görüntüle →</span>
-      </div>
-    </a>
-
   </section>
 
   <!-- ─── Çalışılan Kişiler ───────────────────────────── -->
